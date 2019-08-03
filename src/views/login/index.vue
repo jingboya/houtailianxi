@@ -36,7 +36,8 @@ export default {
       form: {
         mobile: '18848956338',
         code: ''
-      }
+      },
+      captchaObj: null // 通过initGeetest得到极验验证码对象
     }
   },
   components: {},
@@ -52,6 +53,9 @@ export default {
       }).then(res => {
         // console.log(res.data.data)
         const data = res.data.data
+        if (this.captchaObj) {
+          return this.captchaObj.verify()
+        }
         window.initGeetest({
           // 以下配置参数来自服务端 SDK
           gt: data.gt,
@@ -59,7 +63,8 @@ export default {
           offline: !data.success,
           new_captcha: data.new_captcha,
           product: 'bind' // 隐藏按钮式
-        }, function (captchaObj) {
+        }, (captchaObj) => {
+          this.captchaObj = captchaObj
           // 这里可以调用验证实例 captchaObj 的实例方法
           // console.log(captchaObj)
           captchaObj.onReady(function () {
