@@ -1,6 +1,6 @@
 <template>
  <div>
-   <p class="iconfont icon-car"></p>
+   <router-view/>
  </div>
 </template>
 
