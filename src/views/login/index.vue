@@ -2,8 +2,8 @@
   <div class="login-wrap">
     <div class="login-form-wrap">
       <div class="login-head">
-      <img src="./logo_index.png" alt="头条">
-    </div>
+        <img src="./logo_index.png" alt="头条" />
+      </div>
       <el-form ref="form" :model="form">
         <el-form-item>
           <el-input v-model="form.mobile" placeholder="手机号"></el-input>
@@ -13,7 +13,7 @@
             <el-input v-model="form.code" placeholder="验证码"></el-input>
           </el-col>
           <el-col :span="6" :offset="2">
-            <el-button type="primary">获取验证码</el-button>
+            <el-button type="primary" @click="handleSendCode">获取验证码</el-button>
           </el-col>
         </el-form-item>
         <el-form-item>
@@ -26,12 +26,14 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   name: 'AppLogin',
   data () {
     return {
       form: {
-        mobile: '',
+        mobile: '18848956338',
         code: ''
       }
     }
@@ -40,6 +42,15 @@ export default {
   methods: {
     onSubmit () {
       console.log('submit!')
+    },
+    handleSendCode () {
+      const { mobile } = this.form
+      axios({
+        method: 'GET',
+        url: `http://ttapi.research.itcast.cn/mp/v1_0/captchas/${mobile}`
+      }).then(res => {
+        console.log(res.data)
+      })
     }
   }
 }
@@ -52,21 +63,21 @@ export default {
   justify-content: center;
   align-items: center;
   // background-color: #ccc;
-  background: url('./login_bg.jpg') no-repeat;
+  background: url("./login_bg.jpg") no-repeat;
   background-size: 100%;
-  .login-head{
+  .login-head {
     display: flex;
     justify-content: center;
     margin-bottom: 10px;
-    img{
+    img {
       width: 200px;
     }
   }
-  .login-form-wrap{
+  .login-form-wrap {
     background-color: #fff;
-    padding:50px;
-    .btn-login{
-      width:100%
+    padding: 50px;
+    .btn-login {
+      width: 100%;
     }
   }
 }
