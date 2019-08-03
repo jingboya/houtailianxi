@@ -71,7 +71,25 @@ export default {
           // 验证码ready之后才能调用verify方法显示验证码
             captchaObj.verify() // 显示验证码
           }).onSuccess(function () {
-            console.log('验证成功了')
+            // console.log('验证成功了')
+            // console.log(captchaObj.getValidate())
+            const {
+              geetest_challenge: challenge,
+              geetest_seccode: seccode,
+              geetest_validate: validate } =
+            captchaObj.getValidate()
+            // 调用获取短信验证码（极验API2）接口，发送短信
+            axios({
+              method: 'GET',
+              url: `http://ttapi.research.itcast.cn/mp/v1_0/sms/codes/${mobile}`,
+              parmas: { // 专门用来 传递query查询字符串参数
+                challenge,
+                seccode,
+                validate
+              }
+            }).then(res => {
+              console.log(res.data)
+            })
           })
         })
       })
