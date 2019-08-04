@@ -1,12 +1,12 @@
 <template>
  <div>
-<p>555</p>
+publish
  </div>
 </template>
 
 <script>
 export default {
-  name: 'AppHome',
+  name: '',
   data () {
     return {
 
