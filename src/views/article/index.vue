@@ -52,7 +52,7 @@
 </template>
 
 <script>
-const userInfo = JSON.parse(window.localStorage.getItem('user_info'))
+// const userInfo = JSON.parse(window.localStorage.getItem('user_info'))
 export default {
   name: 'ArticleList',
   data () {
@@ -95,10 +95,10 @@ export default {
   created () {
     this.$http({
       method: 'GET',
-      url: '/articles',
-      headers: {
-        Authorization: `Bearer ${userInfo.token}` // 注意： Bearer和token之间要有空格
-      }
+      url: '/articles'
+      // headers: {
+      //   Authorization: `Bearer ${userInfo.token}` // 注意： Bearer和token之间要有空格
+      // }
     }).then(res => {
       console.log(res)
     })

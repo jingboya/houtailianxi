@@ -49,9 +49,15 @@ axios.interceptors.request.use(config => {
 /**
  * Axios响应拦截器
  */
-axios.interceptors.response.use(response => {
-  return response
-}, error => {
+axios.interceptors.response.use(response => { // >= 200 && < 400 的状态码进入这里
+  // console.log('response => ', response)
+  // return response
+  // 将响应数据处理成统一的数据格式方便使用
+  console.log('response => ', response)
+  return response.data.data
+}, error => { // >= 400 的状态码会进入这里
+  // console.dir(error)
+  console.log('response error =>', error)
   return Promise.reject(error)
 })
 

@@ -99,11 +99,11 @@ export default {
         url: '/authorizations',
         data: this.form
       })
-        .then(res => {
+        .then(data => {
           // >=200&<400的状态码会进入到这里
           // console.log(res.data)
           // Element 提供的Message消息提升组件，也是组件调用的一种形式
-          window.localStorage.setItem('user_info', JSON.stringify(res.data.data))
+          window.localStorage.setItem('user_info', JSON.stringify(data))
           this.$message({
             message: '登录成功',
             type: 'success'
@@ -159,9 +159,9 @@ export default {
       this.$http({
         method: 'GET',
         url: `/captchas/${this.form.mobile}`
-      }).then(res => {
+      }).then(data => {
         // console.log(res.data.data)
-        const data = res.data.data
+        // const data = res.data.data
 
         window.initGeetest(
           {
@@ -201,7 +201,7 @@ export default {
                     seccode,
                     validate
                   }
-                }).then(res => {
+                }).then(data => {
                   // console.log(res.data)
                   // 发送短信后，开始倒计时
                   this.codeCountDown()
