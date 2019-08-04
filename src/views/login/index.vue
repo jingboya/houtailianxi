@@ -12,12 +12,18 @@
             <el-input v-model="form.mobile" placeholder="手机号"></el-input>
           </el-form-item>
           <el-form-item prop="code">
+            <!-- 支持栅格布局，一共24列 -->
             <el-col :span="12">
               <el-input v-model="form.code" placeholder="验证码"></el-input>
             </el-col>
             <el-col :span="6" :offset="2">
+              <!-- <el-button @click="handleSendCode">获取验证码</el-button> -->
               <el-button type="primary" @click="handleSendCode">获取验证码</el-button>
             </el-col>
+          </el-form-item>
+          <el-form-item prop="agree">
+            <el-checkbox v-model="form.agree"></el-checkbox>
+              <span>我已阅读并同意<a href="#">用户协议</a>和<a href="#">隐私条款</a></span>
           </el-form-item>
           <el-form-item>
             <!-- 给组件加class，会作用到它的根元素 -->
@@ -43,7 +49,8 @@ export default {
     return {
       form: { // 表单数据
         mobile: '18848956338',
-        code: ''
+        code: '',
+        agree: ''// 是否同意用户协议
       },
       loginLoading: false, // 登录按钮的loading状态
       rules: { // 表单验证规则
@@ -54,6 +61,10 @@ export default {
         code: [
           { required: true, message: '请输入验证码', trigger: 'blur' },
           { min: 6, max: 6, message: '长度必须为6个字符', trigger: 'blur' }
+        ],
+        agree: [
+          { required: true, message: '请同意用户协议', trigger: 'change' },
+          { pattern: /true/, message: '请同意用户协议', trigger: 'change' }
         ]
       },
       captchaObj: null // 通过initGeetest得到极验验证码对象
@@ -181,6 +192,7 @@ export default {
   .login-form-wrap {
     background-color: #fff;
     padding: 50px;
+    border-radius: 10px;
     .btn-login {
       width: 100%;
     }
