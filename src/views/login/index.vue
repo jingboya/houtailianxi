@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+// import axios from 'axios'
 import '@/vendor/gt'
 const initCodeSeconds = 60
 
@@ -94,9 +94,9 @@ export default {
     },
     submitLogin () {
       this.loginLoading = true
-      axios({
+      this.$http({
         method: 'POST',
-        url: 'http://ttapi.research.itcast.cn/mp/v1_0/authorizations',
+        url: '/authorizations',
         data: this.form
       })
         .then(res => {
@@ -156,9 +156,9 @@ export default {
       // 函数中的function函数中的this指向window
       // 初始化验证期间，禁用按钮的点击状态
       this.codeLoading = true
-      axios({
+      this.$http({
         method: 'GET',
-        url: `http://ttapi.research.itcast.cn/mp/v1_0/captchas/${this.form.mobile}`
+        url: `/captchas/${this.form.mobile}`
       }).then(res => {
         // console.log(res.data.data)
         const data = res.data.data
@@ -192,9 +192,9 @@ export default {
                   geetest_validate: validate
                 } = captchaObj.getValidate()
                 // 调用获取短信验证码（极验API2）接口，发送短信
-                axios({
+                this.$http({
                   method: 'GET',
-                  url: `http://ttapi.research.itcast.cn/mp/v1_0/sms/codes/${this.form.mobile}`,
+                  url: `/sms/codes/${this.form.mobile}`,
                   params: {
                     // 专门用来 传递query查询字符串参数
                     challenge,
