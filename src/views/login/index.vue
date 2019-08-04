@@ -103,6 +103,7 @@ export default {
           // >=200&<400的状态码会进入到这里
           // console.log(res.data)
           // Element 提供的Message消息提升组件，也是组件调用的一种形式
+          window.localStorage.setItem('user_info', JSON.stringify(res.data.data))
           this.$message({
             message: '登录成功',
             type: 'success'
