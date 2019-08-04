@@ -1,7 +1,7 @@
 <template>
  <el-row class="app-header">
-   <el-col span="14">我的后台</el-col>
-   <el-col span="4" :offset="6">
+   <el-col :span="14">我的后台</el-col>
+   <el-col :span="4" :offset="6">
      <el-dropdown trigger="click">
         <span class="el-dropdown-link">
           <img width="30" :src="uesrInfo.photo">

@@ -21,7 +21,7 @@
         </el-form-item>
         <el-form-item label="活动时间">
           <el-date-picker
-            v-model="value1"
+            v-model="value"
             type="daterange"
             range-separator="至"
             start-placeholder="开始日期"
@@ -52,6 +52,7 @@
 </template>
 
 <script>
+const userInfo = JSON.parse(window.localStorage.getItem('user_info'))
 export default {
   name: 'ArticleList',
   data () {
@@ -86,10 +87,21 @@ export default {
         delivery: false,
         type: [],
         resource: '',
-        desc: '',
-        value1: ''
-      }
+        desc: ''
+      },
+      value: ''
     }
+  },
+  created () {
+    this.$http({
+      method: 'GET',
+      url: '/articles',
+      headers: {
+        Authorization: `Bearer ${userInfo.token}` // 注意： Bearer和token之间要有空格
+      }
+    }).then(res => {
+      console.log(res)
+    })
   },
   methods: {
     onSubmit () {
