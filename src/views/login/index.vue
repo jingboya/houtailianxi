@@ -18,7 +18,7 @@
         </el-form-item>
         <el-form-item>
           <!-- 给组件加class，会作用到它的根元素 -->
-          <el-button class="btn-login" type="primary" @click="onSubmit">立即创建</el-button>
+          <el-button class="btn-login" type="primary" @click="handleLogin">登录</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -42,8 +42,29 @@ export default {
   },
   components: {},
   methods: {
-    onSubmit () {
-      console.log('submit!')
+    handleLogin () {
+      axios({
+        method: 'POST',
+        url: 'http://ttapi.research.itcast.cn/mp/v1_0/authorizations',
+        data: this.form
+      }).then(res => { // >=200&<400的状态码会进入到这里
+        // console.log(res.data)
+        // Element 提供的Message消息提升组件，也是组件调用的一种形式
+        this.$message({
+          message: '登录成功',
+          type: 'success'
+        })
+        // 建议路由跳转用name去跳转，路由传参非常方便
+        this.$router.push({
+          name: 'home'
+        })
+      }).catch(err => { // >=400的http状态码会进入catch中
+        // console.dir(err)
+        // this.$message.error('登录失败')
+        if (err.response.status === 400) {
+          this.$message.err('登录失败，验证码或手机号错误')
+        }
+      })
     },
     handleSendCode () {
       const { mobile } = this.form
