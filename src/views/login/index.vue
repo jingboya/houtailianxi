@@ -75,7 +75,8 @@ export default {
       },
       captchaObj: null, // 通过initGeetest得到极验验证码对象
       codeSecons: initCodeSeconds, // 倒计时的时间
-      codeTimer: null // 倒计时定时器
+      codeTimer: null, // 倒计时定时器
+      sendMobile: '' // 保存初始化验证码之后发送短信的手机号
     }
   },
   components: {},
@@ -126,20 +127,34 @@ export default {
         if (errorMessage.trim().length > 0) {
           return
         }
-        this.showGeetest()
+        // 手机号验证通过
+        // 验证是否有验证码插件对象
+        if (this.captchaObj) {
+          if (this.form.mobile !== this.sendMobile) {
+            // 手机号码发送改变，重新初始化验证码插件
+            // 重新初始化之前，将原来的验证码插件 DOM 删除
+            document.body.removeChild(document.querySelector('.geetest_panel'))
+            // 重新初始化
+            this.showGeetest()
+          } else {
+            this.captchaObj.verify()
+          }
+        } else {
+          // 这里是第一次 的初始化验证码插件
+          this.showGeetest()
+        }
+        // this.showGeetest()
+        // 如果用户输入的手机号和之前初始化的验证码手机号不一致，就基于当前手机号码重新初始化
+        // 否则，直接 verify 显示
       })
     },
 
     showGeetest () {
-      const { mobile } = this.form
-      if (this.captchaObj) {
-        return this.captchaObj.verify()
-      }
-
+      // const { mobile } = this.form
       // 函数中的function函数中的this指向window
       axios({
         method: 'GET',
-        url: `http://ttapi.research.itcast.cn/mp/v1_0/captchas/${mobile}`
+        url: `http://ttapi.research.itcast.cn/mp/v1_0/captchas/${this.form.mobile}`
       }).then(res => {
         // console.log(res.data.data)
         const data = res.data.data
@@ -160,6 +175,7 @@ export default {
             captchaObj
               .onReady(() => {
                 // 验证码ready之后才能调用verify方法显示验证码
+                this.sendMobile = this.form.mobile
                 captchaObj.verify() // 显示验证码
               })
               .onSuccess(() => {
@@ -173,7 +189,7 @@ export default {
                 // 调用获取短信验证码（极验API2）接口，发送短信
                 axios({
                   method: 'GET',
-                  url: `http://ttapi.research.itcast.cn/mp/v1_0/sms/codes/${mobile}`,
+                  url: `http://ttapi.research.itcast.cn/mp/v1_0/sms/codes/${this.form.mobile}`,
                   params: {
                     // 专门用来 传递query查询字符串参数
                     challenge,
