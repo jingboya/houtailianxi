@@ -114,16 +114,26 @@ export default {
         })
     },
     handleSendCode () {
+      this.$refs['ruleForm'].validateField('mobile', errorMessage => {
+        if (errorMessage.trim().length > 0) {
+          return
+        }
+        this.showGeetest()
+      })
+    },
+
+    showGeetest () {
       const { mobile } = this.form
+      if (this.captchaObj) {
+        return this.captchaObj.verify()
+      }
       axios({
         method: 'GET',
         url: `http://ttapi.research.itcast.cn/mp/v1_0/captchas/${mobile}`
       }).then(res => {
         // console.log(res.data.data)
         const data = res.data.data
-        if (this.captchaObj) {
-          return this.captchaObj.verify()
-        }
+
         window.initGeetest(
           {
             // 以下配置参数来自服务端 SDK
