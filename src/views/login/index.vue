@@ -4,23 +4,27 @@
       <div class="login-head">
         <img src="./logo_index.png" alt="头条" />
       </div>
-      <el-form ref="form" :model="form">
-        <el-form-item>
-          <el-input v-model="form.mobile" placeholder="手机号"></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-col :span="12">
-            <el-input v-model="form.code" placeholder="验证码"></el-input>
-          </el-col>
-          <el-col :span="6" :offset="2">
-            <el-button type="primary" @click="handleSendCode">获取验证码</el-button>
-          </el-col>
-        </el-form-item>
-        <el-form-item>
-          <!-- 给组件加class，会作用到它的根元素 -->
-          <el-button class="btn-login" type="primary" @click="handleLogin">登录</el-button>
-        </el-form-item>
-      </el-form>
+      <div class="login-form">
+        <!-- 表单验证：rules配置验证规则，ref获取表单组件，可以手动调用表单组件的验证方法 -->
+        <!-- 将需要验证的字段，通过prop属性配置到el-form-item组件上 -->
+        <el-form :model="form" :rules="rules" ref="ruleForm">
+          <el-form-item prop="mobile">
+            <el-input v-model="form.mobile" placeholder="手机号"></el-input>
+          </el-form-item>
+          <el-form-item prop="code">
+            <el-col :span="12">
+              <el-input v-model="form.code" placeholder="验证码"></el-input>
+            </el-col>
+            <el-col :span="6" :offset="2">
+              <el-button type="primary" @click="handleSendCode">获取验证码</el-button>
+            </el-col>
+          </el-form-item>
+          <el-form-item>
+            <!-- 给组件加class，会作用到它的根元素 -->
+            <el-button class="btn-login" type="primary" @click="handleLogin">登录</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
     </div>
   </div>
 </template>
@@ -37,34 +41,58 @@ export default {
         mobile: '18848956338',
         code: ''
       },
+      rules: {
+        mobile: [
+          { required: true, message: '请输入手机号', trigger: 'blur' },
+          { min: 11, max: 11, message: '请输入正确的手机号', trigger: 'blur' }
+        ],
+        code: [
+          { required: true, message: '请输入验证码', trigger: 'blur' },
+          { min: 6, max: 6, message: '长度必须为6个字符', trigger: 'blur' }
+        ]
+      },
       captchaObj: null // 通过initGeetest得到极验验证码对象
     }
   },
   components: {},
   methods: {
+    // 表单组件有一个方法 validate 可以用于获取当前表单的验证状态
     handleLogin () {
+      this.$refs['ruleForm'].validate(valid => {
+        if (!valid) {
+          return
+        }
+        // 表单验证通过，提交登录
+        this.login()
+      })
+    },
+    login () {
       axios({
         method: 'POST',
         url: 'http://ttapi.research.itcast.cn/mp/v1_0/authorizations',
         data: this.form
-      }).then(res => { // >=200&<400的状态码会进入到这里
-        // console.log(res.data)
-        // Element 提供的Message消息提升组件，也是组件调用的一种形式
-        this.$message({
-          message: '登录成功',
-          type: 'success'
-        })
-        // 建议路由跳转用name去跳转，路由传参非常方便
-        this.$router.push({
-          name: 'home'
-        })
-      }).catch(err => { // >=400的http状态码会进入catch中
-        // console.dir(err)
-        // this.$message.error('登录失败')
-        if (err.response.status === 400) {
-          this.$message.err('登录失败，验证码或手机号错误')
-        }
       })
+        .then(res => {
+          // >=200&<400的状态码会进入到这里
+          // console.log(res.data)
+          // Element 提供的Message消息提升组件，也是组件调用的一种形式
+          this.$message({
+            message: '登录成功',
+            type: 'success'
+          })
+          // 建议路由跳转用name去跳转，路由传参非常方便
+          this.$router.push({
+            name: 'home'
+          })
+        })
+        .catch(err => {
+          // >=400的http状态码会进入catch中
+          // console.dir(err)
+          // this.$message.error('登录失败')
+          if (err.response.status === 400) {
+            this.$message.err('登录失败，验证码或手机号错误')
+          }
+        })
     },
     handleSendCode () {
       const { mobile } = this.form
@@ -77,42 +105,48 @@ export default {
         if (this.captchaObj) {
           return this.captchaObj.verify()
         }
-        window.initGeetest({
-          // 以下配置参数来自服务端 SDK
-          gt: data.gt,
-          challenge: data.challenge,
-          offline: !data.success,
-          new_captcha: data.new_captcha,
-          product: 'bind' // 隐藏按钮式
-        }, (captchaObj) => {
-          this.captchaObj = captchaObj
-          // 这里可以调用验证实例 captchaObj 的实例方法
-          // console.log(captchaObj)
-          captchaObj.onReady(function () {
-          // 验证码ready之后才能调用verify方法显示验证码
-            captchaObj.verify() // 显示验证码
-          }).onSuccess(function () {
-            // console.log('验证成功了')
-            // console.log(captchaObj.getValidate())
-            const {
-              geetest_challenge: challenge,
-              geetest_seccode: seccode,
-              geetest_validate: validate } =
-            captchaObj.getValidate()
-            // 调用获取短信验证码（极验API2）接口，发送短信
-            axios({
-              method: 'GET',
-              url: `http://ttapi.research.itcast.cn/mp/v1_0/sms/codes/${mobile}`,
-              parmas: { // 专门用来 传递query查询字符串参数
-                challenge,
-                seccode,
-                validate
-              }
-            }).then(res => {
-              console.log(res.data)
-            })
-          })
-        })
+        window.initGeetest(
+          {
+            // 以下配置参数来自服务端 SDK
+            gt: data.gt,
+            challenge: data.challenge,
+            offline: !data.success,
+            new_captcha: data.new_captcha,
+            product: 'bind' // 隐藏按钮式
+          },
+          captchaObj => {
+            this.captchaObj = captchaObj
+            // 这里可以调用验证实例 captchaObj 的实例方法
+            // console.log(captchaObj)
+            captchaObj
+              .onReady(function () {
+                // 验证码ready之后才能调用verify方法显示验证码
+                captchaObj.verify() // 显示验证码
+              })
+              .onSuccess(function () {
+                // console.log('验证成功了')
+                // console.log(captchaObj.getValidate())
+                const {
+                  geetest_challenge: challenge,
+                  geetest_seccode: seccode,
+                  geetest_validate: validate
+                } = captchaObj.getValidate()
+                // 调用获取短信验证码（极验API2）接口，发送短信
+                axios({
+                  method: 'GET',
+                  url: `http://ttapi.research.itcast.cn/mp/v1_0/sms/codes/${mobile}`,
+                  parmas: {
+                    // 专门用来 传递query查询字符串参数
+                    challenge,
+                    seccode,
+                    validate
+                  }
+                }).then(res => {
+                  console.log(res.data)
+                })
+              })
+          }
+        )
       })
     }
   }
