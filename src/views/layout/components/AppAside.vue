@@ -30,7 +30,7 @@
         </template>
         <el-menu-item-group>
           <el-menu-item index="/publish" class="el-icon-location">发布</el-menu-item>
-          <el-menu-item index="1-2" class="el-icon-location">内容列表</el-menu-item>
+          <el-menu-item index="/article" class="el-icon-location">内容列表</el-menu-item>
         </el-menu-item-group>
       </el-submenu>
       <el-menu-item index="/comment">
