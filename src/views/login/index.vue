@@ -18,7 +18,12 @@
             </el-col>
             <el-col :span="6" :offset="2">
               <!-- <el-button @click="handleSendCode">获取验证码</el-button> -->
-              <el-button type="primary" @click="handleSendCode">获取验证码</el-button>
+              <!-- 剩余${codeSecons}秒中使用的模板字符串，所以用${} -->
+              <!-- 按钮是否禁用 -->
+              <el-button type="primary"
+              @click="handleSendCode"
+              :disabled="!!codeTimer"
+              >{{ codeTimer ? `还剩余${codeSecons}秒`:'获取验证码'}}</el-button>
             </el-col>
           </el-form-item>
           <el-form-item prop="agree">
@@ -42,7 +47,8 @@
 <script>
 import axios from 'axios'
 import '@/vendor/gt'
-// import { constants } from 'crypto'
+const initCodeSeconds = 60
+
 export default {
   name: 'AppLogin',
   data () {
@@ -67,7 +73,9 @@ export default {
           { pattern: /true/, message: '请同意用户协议', trigger: 'change' }
         ]
       },
-      captchaObj: null // 通过initGeetest得到极验验证码对象
+      captchaObj: null, // 通过initGeetest得到极验验证码对象
+      codeSecons: initCodeSeconds, // 倒计时的时间
+      codeTimer: null // 倒计时定时器
     }
   },
   components: {},
@@ -127,6 +135,8 @@ export default {
       if (this.captchaObj) {
         return this.captchaObj.verify()
       }
+
+      // 函数中的function函数中的this指向window
       axios({
         method: 'GET',
         url: `http://ttapi.research.itcast.cn/mp/v1_0/captchas/${mobile}`
@@ -148,11 +158,11 @@ export default {
             // 这里可以调用验证实例 captchaObj 的实例方法
             // console.log(captchaObj)
             captchaObj
-              .onReady(function () {
+              .onReady(() => {
                 // 验证码ready之后才能调用verify方法显示验证码
                 captchaObj.verify() // 显示验证码
               })
-              .onSuccess(function () {
+              .onSuccess(() => {
                 // console.log('验证成功了')
                 // console.log(captchaObj.getValidate())
                 const {
@@ -164,19 +174,34 @@ export default {
                 axios({
                   method: 'GET',
                   url: `http://ttapi.research.itcast.cn/mp/v1_0/sms/codes/${mobile}`,
-                  parmas: {
+                  params: {
                     // 专门用来 传递query查询字符串参数
                     challenge,
                     seccode,
                     validate
                   }
                 }).then(res => {
-                  console.log(res.data)
+                  // console.log(res.data)
+                  // 发送短信后，开始倒计时
+                  this.codeCountDown()
                 })
               })
           }
         )
       })
+    },
+
+    // 倒计时
+    codeCountDown () {
+      // console.log('111')
+      this.codeTimer = window.setInterval(() => {
+        this.codeSecons--
+        if (this.codeSecons <= 0) {
+          this.codeSecons = initCodeSeconds // 倒计时时间回到初始状态
+          window.clearInterval(this.codeTimer) // 清除定时器
+          this.codeTimer = null // 清除倒计时定时器的标志
+        }
+      }, 1000)
     }
   }
 }
