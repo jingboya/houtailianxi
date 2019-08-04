@@ -22,7 +22,7 @@
               <!-- 按钮是否禁用 -->
               <el-button type="primary"
               @click="handleSendCode"
-              :disabled="!!codeTimer"
+              :disabled="!!codeTimer || codeLoading"
               >{{ codeTimer ? `还剩余${codeSecons}秒`:'获取验证码'}}</el-button>
             </el-col>
           </el-form-item>
@@ -76,7 +76,8 @@ export default {
       captchaObj: null, // 通过initGeetest得到极验验证码对象
       codeSecons: initCodeSeconds, // 倒计时的时间
       codeTimer: null, // 倒计时定时器
-      sendMobile: '' // 保存初始化验证码之后发送短信的手机号
+      sendMobile: '', // 保存初始化验证码之后发送短信的手机号
+      codeLoading: false
     }
   },
   components: {},
@@ -152,6 +153,8 @@ export default {
     showGeetest () {
       // const { mobile } = this.form
       // 函数中的function函数中的this指向window
+      // 初始化验证期间，禁用按钮的点击状态
+      this.codeLoading = true
       axios({
         method: 'GET',
         url: `http://ttapi.research.itcast.cn/mp/v1_0/captchas/${this.form.mobile}`
@@ -177,6 +180,7 @@ export default {
                 // 验证码ready之后才能调用verify方法显示验证码
                 this.sendMobile = this.form.mobile
                 captchaObj.verify() // 显示验证码
+                this.codeLoading = false
               })
               .onSuccess(() => {
                 // console.log('验证成功了')
