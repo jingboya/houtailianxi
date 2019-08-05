@@ -15,12 +15,31 @@
         <el-input type="textarea" v-model="articleForm.content"></el-input>
       </el-form-item>
       <el-form-item label="封面" >
-
       </el-form-item>
       <el-form-item label="频道" >
-        <el-select v-model="articleForm.channel_id">
+         <!--
+          组件通信：
+            父传子：Props Down
+            子传父：Events Up
+         -->
+        <!-- <article-channel
+          :value="articleForm.channel_id"
+          @input="articleForm.channel_id = $event"
+        ></article-channel> -->
+
+        <!--
+          v-model 就是：
+            :value="articleForm.channel_id"
+            @input="articleForm.channel_id = $event"
+          简写。
+         -->
+        <article-Channel
+          :value="articleForm.channel_id"
+          @input="articleForm.channel_id = $event"
+        ></article-Channel>
+        <!-- <el-select v-model="articleForm.channel_id">
           <el-option label="" value="shanghai"></el-option>
-        </el-select>
+        </el-select> -->
 
       </el-form-item>
     </el-form>
@@ -29,6 +48,7 @@
 </template>
 
 <script>
+import ArticleChannel from '@/components/article-channel'
 export default {
   name: 'AppPublish',
   data () {
@@ -40,10 +60,13 @@ export default {
           type: 0, // 封面类型，-1：自动，0-无图，1-1张，3-3张
           images: [] // 图片链接
         },
-        channel_id: '3' // 频道
+        channel_id: '' // 频道
       }
 
     }
+  },
+  components: {
+    ArticleChannel
   },
   methods: {
     handlePublish (draft = false) {
