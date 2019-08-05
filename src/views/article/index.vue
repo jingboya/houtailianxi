@@ -7,7 +7,7 @@
       </div>
       <el-form ref="form" :model="form" label-width="80px">
         <el-form-item label="状态">
-          <el-radio-group v-model="form.resource">
+          <el-radio-group v-model="filterParams.status">
             <el-radio label="">全部</el-radio>
             <el-radio
              v-for="(item,index) in statTypes"
@@ -16,7 +16,7 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="活动区域">
-          <el-select v-model="form.region" placeholder="请选择活动区域">
+          <el-select v-model="filterParams.channel_id" placeholder="请选择活动区域">
             <el-option label="全部" value=""></el-option>
             <el-option
               v-for="item in channels"
@@ -29,7 +29,9 @@
         </el-form-item>
         <el-form-item label="活动时间">
           <el-date-picker
-            v-model="form.value"
+            value-format="yyyy-MM-dd"
+            v-model="begin_end_pubdate"
+            @change="handleDateChange"
             type="daterange"
             range-separator="至"
             start-placeholder="开始日期"
@@ -146,7 +148,14 @@ export default {
           label: '已删除'
         }
       ],
-      channels: [] // 频道列表
+      channels: [], // 频道列表
+      filterParams: { // 文章查询条件参数
+        status: '', // 文本状态
+        channel_id: '', // 频道 id
+        begin_pubdate: '', // 开始时间
+        end_pubdate: '' // 结束时间
+      },
+      begin_end_pubdate: []
     }
   },
   created () {
@@ -158,6 +167,14 @@ export default {
   methods: {
     loadArticles (page = 1) { // 函数参数的默认值
       this.articleLoading = true
+
+      // 过滤出有效的查询条件数据字段
+      const filterData = {}
+      for (let key in this.filterParams) {
+        if (this.filterParams[key]) {
+          filterData[key] = this.filterParams[key]
+        }
+      }
       this.$http({
         method: 'GET',
         url: '/articles',
@@ -166,7 +183,8 @@ export default {
         // }
         params: {
           page, // 请求数据的页码，不传默认为一
-          per_page: 10 // 请求数据的每页大小，不传默认为10
+          per_page: 10, // 请求数据的每页大小，不传默认为10
+          ...filterData // 将对象混入当前对象，说白就是对象拷贝
         }
       }).then(data => {
         // console.log(data)
@@ -185,7 +203,9 @@ export default {
       })
     },
     onSubmit () {
-      console.log('submit!')
+      // console.log('submit!')
+      this.page = 1
+      this.loadArticles()
     },
     handleCurrentChange (page) {
       // console.log(page)
@@ -219,6 +239,12 @@ export default {
         })
       })
       // console.log(article)
+    },
+    // 日期选择组件的改变事件
+    handleDateChange (value) {
+      // console.log(value)
+      this.filterParams.begin_pubdate = value[0]
+      this.filterParams.end_pubdate = value[1]
     }
   }
 }
