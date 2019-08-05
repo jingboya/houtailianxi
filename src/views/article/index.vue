@@ -21,7 +21,7 @@
         </el-form-item>
         <el-form-item label="活动时间">
           <el-date-picker
-            v-model="value"
+            v-model="form.value"
             type="daterange"
             range-separator="至"
             start-placeholder="开始日期"
@@ -64,7 +64,15 @@
         <el-table-column prop="status" label="状态"></el-table-column>
       </el-table>
       <!-- 分页 -->
-      <el-pagination background layout="prev, pager, next" :total="1000"></el-pagination>
+      <!--
+        一：分多少页
+          每页多大，默认是10条每页，我们的接口如果没有指定每页条数，则默认也是按照每页10条返回数据
+          有多少条数据
+          total  总记录数
+          current-page 当前页码，也就是高亮的那个页码
+        二：页面改变加载对应的页码数据
+       -->
+      <el-pagination background layout="prev, pager, next" :total="totalCount" @current-change="handleCurrentChange"></el-pagination>
     </el-card>
   </div>
 </template>
@@ -84,29 +92,41 @@ export default {
         delivery: false,
         type: [],
         resource: '',
-        desc: ''
+        desc: '',
+        value: ''
       },
-      value: ''
+      totalCount: 0
+
     }
   },
   created () {
     this.loadArticles()
   },
   methods: {
-    loadArticles () {
+    loadArticles (page = 1) { // 函数参数的默认值
       this.$http({
         method: 'GET',
-        url: '/articles'
+        url: '/articles',
         // headers: {
         //   Authorization: `Bearer ${userInfo.token}` // 注意： Bearer和token之间要有空格
         // }
+        params: {
+          page, // 请求数据的页码，不传默认为一
+          per_page: 10 // 请求数据的每页大小，不传默认为10
+        }
       }).then(data => {
         // console.log(data)
-        this.articles = data.results
+        this.articles = data.results // 列表数据
+        this.totalCount = data.total_count // 总记录数
       })
     },
     onSubmit () {
       console.log('submit!')
+    },
+    handleCurrentChange (page) {
+      // console.log(page)
+      // 当页码发生改变的时候，请求该页码对应的数据
+      this.loadArticles(page)
     }
   }
 }
