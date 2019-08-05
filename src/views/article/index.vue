@@ -40,10 +40,28 @@
         <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
       </div>
       <!-- table表格 -->
-      <el-table class="list-table" :data="tableData" style="width: 100%">
-        <el-table-column prop="date" label="日期" width="180"></el-table-column>
-        <el-table-column prop="name" label="姓名" width="180"></el-table-column>
-        <el-table-column prop="address" label="地址"></el-table-column>
+      <!--
+        data 用来指定表格的数据
+        表格不需要我们自己手动遍历
+        只需要把数据给 el-table 的 data 属性就可以了
+        然后配置 el-table-column 需要展示的数据字段即可
+      -->
+      <el-table class="list-table" :data="articles" style="width: 100%">
+        <el-table-column prop="cover.images[0]" label="封面" width="180">
+          <template slot-scope="scope">
+            <img width="30" :src="scope.row.cover.images[0]" />
+          </template>
+        </el-table-column>
+        <!-- 表格列默认只能输出文本，如果需要自定义里面的内容，则需要 -->
+        <!--
+            slot-scope 是插槽作用域，现在先听个名词，你要知道的是值 scope 是起的一个名字
+            scope 中有个成员叫 row
+            也就是说 scope.row 就是当前的遍历项对象
+            自定义列模板，el-table-column 的 prop 就没有意义了
+        -->
+        <el-table-column prop="title" label="标题" width="180"></el-table-column>
+        <el-table-column prop="pubdate" label="发布日期" width="180"></el-table-column>
+        <el-table-column prop="status" label="状态"></el-table-column>
       </el-table>
       <!-- 分页 -->
       <el-pagination background layout="prev, pager, next" :total="1000"></el-pagination>
@@ -57,28 +75,7 @@ export default {
   name: 'ArticleList',
   data () {
     return {
-      tableData: [
-        {
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        },
-        {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1517 弄'
-        },
-        {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1519 弄'
-        },
-        {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
-        }
-      ],
+      articles: [],
       form: {
         name: '',
         region: '',
@@ -93,17 +90,21 @@ export default {
     }
   },
   created () {
-    this.$http({
-      method: 'GET',
-      url: '/articles'
-      // headers: {
-      //   Authorization: `Bearer ${userInfo.token}` // 注意： Bearer和token之间要有空格
-      // }
-    }).then(res => {
-      console.log(res)
-    })
+    this.loadArticles()
   },
   methods: {
+    loadArticles () {
+      this.$http({
+        method: 'GET',
+        url: '/articles'
+        // headers: {
+        //   Authorization: `Bearer ${userInfo.token}` // 注意： Bearer和token之间要有空格
+        // }
+      }).then(data => {
+        // console.log(data)
+        this.articles = data.results
+      })
+    },
     onSubmit () {
       console.log('submit!')
     }
