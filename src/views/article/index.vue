@@ -6,15 +6,24 @@
         <span>筛选条件</span>
       </div>
       <el-form ref="form" :model="form" label-width="80px">
-        <el-form-item label="特殊资源">
+        <el-form-item label="状态">
           <el-radio-group v-model="form.resource">
-            <el-radio label="线上品牌商赞助"></el-radio>
-            <el-radio label="线下场地免费"></el-radio>
+            <el-radio label="">全部</el-radio>
+            <el-radio
+             v-for="(item,index) in statTypes"
+             :key="item.label"
+             :label="index+''">{{item.label}}</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="活动区域">
           <el-select v-model="form.region" placeholder="请选择活动区域">
-            <el-option label="区域一" value="shanghai"></el-option>
+            <el-option label="全部" value=""></el-option>
+            <el-option
+              v-for="item in channels"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
+            </el-option>
             <el-option label="区域二" value="beijing"></el-option>
           </el-select>
         </el-form-item>
@@ -35,7 +44,7 @@
     <!-- 列表 -->
     <el-card class="list-card">
       <div slot="header" class="clearfix">
-        <span>共找到15条符合条件的内容</span>
+        <span>共找到<strong>{{ totalCount }}</strong>条符合条件的内容</span>
       </div>
       <!-- table表格 -->
       <!--
@@ -136,11 +145,15 @@ export default {
           type: 'danger',
           label: '已删除'
         }
-      ]
+      ],
+      channels: [] // 频道列表
     }
   },
   created () {
+    // 加载文章列表
     this.loadArticles()
+    // 加载频道列表
+    this.loadChannels()
   },
   methods: {
     loadArticles (page = 1) { // 函数参数的默认值
@@ -160,6 +173,15 @@ export default {
         this.articles = data.results // 列表数据
         this.totalCount = data.total_count // 总记录数
         this.articleLoading = false
+      })
+    },
+    loadChannels () {
+      this.$http({
+        method: 'GET',
+        url: '/channels'
+      }).then(data => {
+        // console.log(data)
+        this.channels = data.channels
       })
     },
     onSubmit () {
