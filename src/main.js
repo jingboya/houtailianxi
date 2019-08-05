@@ -3,6 +3,7 @@ import App from './App.vue'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import axios from 'axios'
+import JSONbig from 'json-bigint'
 // 优先查找文件，如果文件查找不到，则找目录
 // 找到目录，优先加载目录中的index.js
 import router from './router'
@@ -23,6 +24,29 @@ axios.defaults.baseURL = 'http://ttapi.research.itcast.cn/mp/v1_0/'
 // 往Vue原型对象中添加成员，尽量使用 $名字 起名字，目的是为了防止和组件中的成员冲突
 Vue.prototype.$http = axios
 Vue.use(ElementUI)
+
+// 使用 JSONbig 处理返回数据中超出 JavaScript 安全整数范围的数字
+// JSONbig 自己会分析数据中的哪个数字超出范围了
+// // 由于后端的数据 id 超出了 JavaScript 的安全整数范围，会导致整数无法精确表示
+// 可以使用 json-biginit 来处理，它会帮你把找出范围的数字给处理好
+axios.defaults.transformResponse = [function (data) {
+  // data 是未经处理的后端响应数据：JSON 格式字符串
+  // Do whatever you want to transform the data
+
+  // JSONbig.parse 类似于 JSON.parse，它的作用也是将 JSON 格式字符串转换为 JavaScript 对象
+  // 唯一的区别就是：JSONbig.parse 会检测被转换数据中的数字是否超出了 JavaScript 安全整数范围，如果超出，它会做特殊处理
+  // 如果 data 不是一个 JSON 格式字符串，会导致 JSONbig.parse 转换失败并异常
+  // 例如我们执行删除操作，后端返回一个 204 状态码，但是没有返回任何数据，也就是空字符串
+  // 那这里 JSONbig.parse(空字符串) 就报错了
+  // return JSONbig.parse(data)
+  try {
+    // data 数据可能不是标准的 JSON 格式字符串，否则会导致 JSONbig.parse(data) 转换失败报错
+    return JSONbig.parse(data)
+  } catch (err) {
+    // 无法转换的数据直接原样返回
+    return data
+  }
+}]
 
 /**
  * Axios 请求拦截器
@@ -54,15 +78,15 @@ axios.interceptors.response.use(response => { // >= 200 && < 400 的状态码进
   // return response
 
   // 将响应数据处理成统一的数据格式方便使用
+  // 由于后端的数据id超过了JavaScript的安全整数范围，会导致整数无法精确表示，可以使用json-biginit来处理，它会帮你把超出范围的数字处理好
   console.log('response => ', response)
-
-  // return response.data.data
+  return response.data.data
   // 如果返回的数据格式是对象
-  if (typeof response.data === 'object' && response.data.data) {
-    return response.data.data
-  } else {
-    return response.data
-  }
+  // if (typeof response.data === 'object' && response.data.data) {
+  //   return response.data.data
+  // } else {
+  //   return response.data
+  // }
 }, error => { // >= 400 的状态码会进入这里
   // console.dir(error)
   const status = error.response.status

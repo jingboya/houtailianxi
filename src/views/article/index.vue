@@ -4,7 +4,6 @@
     <el-card class="filter-card">
       <div slot="header" class="clearfix">
         <span>筛选条件</span>
-        <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
       </div>
       <el-form ref="form" :model="form" label-width="80px">
         <el-form-item label="特殊资源">
@@ -37,7 +36,6 @@
     <el-card class="list-card">
       <div slot="header" class="clearfix">
         <span>共找到15条符合条件的内容</span>
-        <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
       </div>
       <!-- table表格 -->
       <!--
@@ -66,6 +64,12 @@
         <el-table-column prop="title" label="标题" width="180"></el-table-column>
         <el-table-column prop="pubdate" label="发布日期" width="180"></el-table-column>
         <el-table-column prop="status" label="状态"></el-table-column>
+        <el-table-column  label="状态">
+          <template slot-scope="scope">
+            <el-button type="success" plain>修改</el-button>
+            <el-button type="danger" plain @click="handleDelete(scope.row)">删除</el-button>
+          </template>
+        </el-table-column>
       </el-table>
       <!-- 分页 -->
       <!--
@@ -139,6 +143,34 @@ export default {
       // console.log(page)
       // 当页码发生改变的时候，请求该页码对应的数据
       this.loadArticles(page)
+    },
+    handleDelete (article) {
+      // 确认执行
+      // 发送删除请求
+      this.$confirm('确定要删除吗？', '删除提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$http({
+          method: 'DELETE',
+          url: `/articles/${article.id}`
+        }).then(data => {
+          // 提示删除成功
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          })
+          console.log(data)
+          this.loadArticles(this.page)
+        })
+      }).catch(() => {
+        this.$message({
+          thpe: 'info',
+          message: '已取消删除'
+        })
+      })
+      // console.log(article)
     }
   }
 }
