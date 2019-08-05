@@ -46,7 +46,11 @@
         只需要把数据给 el-table 的 data 属性就可以了
         然后配置 el-table-column 需要展示的数据字段即可
       -->
-      <el-table class="list-table" :data="articles" style="width: 100%">
+      <el-table
+      class="list-table"
+      :data="articles"
+      style="width: 100%"
+      v-loading="articleLoading">
         <el-table-column prop="cover.images[0]" label="封面" width="180">
           <template slot-scope="scope">
             <img width="30" :src="scope.row.cover.images[0]" />
@@ -72,7 +76,12 @@
           current-page 当前页码，也就是高亮的那个页码
         二：页面改变加载对应的页码数据
        -->
-      <el-pagination background layout="prev, pager, next" :total="totalCount" @current-change="handleCurrentChange"></el-pagination>
+      <el-pagination
+      background
+      layout="prev, pager, next"
+      :total="totalCount"
+      :disabled="articleLoading"
+      @current-change="handleCurrentChange"></el-pagination>
     </el-card>
   </div>
 </template>
@@ -95,7 +104,8 @@ export default {
         desc: '',
         value: ''
       },
-      totalCount: 0
+      totalCount: 0,
+      articleLoading: false
 
     }
   },
@@ -104,6 +114,7 @@ export default {
   },
   methods: {
     loadArticles (page = 1) { // 函数参数的默认值
+      this.articleLoading = true
       this.$http({
         method: 'GET',
         url: '/articles',
@@ -118,6 +129,7 @@ export default {
         // console.log(data)
         this.articles = data.results // 列表数据
         this.totalCount = data.total_count // 总记录数
+        this.articleLoading = false
       })
     },
     onSubmit () {
