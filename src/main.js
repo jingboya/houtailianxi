@@ -6,6 +6,8 @@ import axios from 'axios'
 import JSONbig from 'json-bigint'
 // 优先查找文件，如果文件查找不到，则找目录
 // 找到目录，优先加载目录中的index.js
+import store from './store'
+
 import router from './router'
 import './styles/index.less'
 import 'nprogress/nprogress.css'
@@ -106,5 +108,6 @@ Vue.config.productionTip = false
 
 new Vue({
   router,
+  store,
   render: h => h(App)
 }).$mount('#app')
