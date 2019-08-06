@@ -3,11 +3,11 @@
     <div slot="header" class="header">
       <span>发布文章</span>
       <div>
-        <el-button type="success" @click="handlePublish(false)">发布</el-button>
-        <el-button type="primary" @click="handlePublish(true)">存入草稿</el-button>
+        <el-button type="success" @click="handlePublish(false)" :loading="publishLoading" >{{isEdit ? '更新' : '发布'}}</el-button>
+        <el-button type="primary" @click="handlePublish(true)" :loading="publishLoading">存入草稿</el-button>
       </div>
     </div>
-    <el-form v-loading="$route.name === 'publish-edit'&&editLoading">
+    <el-form v-loading="isEdit && editLoading">
       <el-form-item>
         <el-input type="text" v-model="articleForm.title" placeholder="标题"></el-input>
       </el-form-item>
@@ -68,7 +68,8 @@ export default {
         channel_id: '' // 频道
       },
       editorOption: {}, // 富文本编辑器相关参数选项
-      editLoading: false
+      editLoading: false,
+      publishLoading: false
     }
   },
   components: {
@@ -78,17 +79,57 @@ export default {
   computed: {
     editor () {
       return this.$refs.myQuillEditor.quill
+    },
+    isEdit () {
+      return this.$route.name === 'publish-edit'
+    },
+    articleId () {
+      return this.$route.params.id
     }
   },
   created () {
-    if (this.$route.name === 'publish-edit') { this.loadArticle() }
+    if (this.isEdit) { this.loadArticle() }
   },
   mounted () {
     console.log('this is current quill instance object', this.editor)
   },
   methods: {
     handlePublish (draft = false) {
-      this.$http({
+      this.publishLoading = true
+      if (this.isEdit) {
+        // 执行编辑操作
+        this.submitEdit(draft).then(() => {
+          this.publishLoading = false
+        })
+      } else {
+        // 执行添加操作
+        this.submitAdd(draft).then(() => {
+          this.publishLoading = false
+        })
+      }
+    },
+    submitEdit (draft) {
+      return this.$http({
+        method: 'PUT',
+        url: `/articles/${this.articleId}`,
+        data: this.articleForm,
+        params: {
+          draft
+        }
+      })
+        .then(data => {
+          this.$message({
+            type: 'success',
+            message: '更新成功'
+          })
+        })
+        .catch(err => {
+          console.log(err)
+          this.$message.error('更新失败')
+        })
+    },
+    submitAdd (draft) {
+      return this.$http({
         method: 'POST',
         url: '/articles',
         data: this.articleForm,
@@ -107,11 +148,12 @@ export default {
           this.$message.error('发布失败')
         })
     },
+
     loadArticle () {
       this.editLoading = true
       this.$http({
         method: 'GET',
-        url: `/articles/${this.$route.params.id}`
+        url: `/articles/${this.articleId}`
       }).then(data => {
         // console.log(data)
         this.articleForm = data
