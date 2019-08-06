@@ -40,6 +40,11 @@ const router = new Router({
           name: 'article-comment',
           path: '/comment',
           component: () => import('@/views/comment')
+        },
+        {
+          name: 'article-setting',
+          path: '/account',
+          component: () => import('@/views/account')
         }
       ]
     },
