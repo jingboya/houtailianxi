@@ -4,51 +4,55 @@
       <span>发布文章</span>
       <div>
         <el-button type="success" @click="handlePublish(false)">发布</el-button>
-      <el-button type="primary" @click="handlePublish(true)">存入草稿</el-button>
+        <el-button type="primary" @click="handlePublish(true)">存入草稿</el-button>
       </div>
     </div>
     <el-form>
-      <el-form-item label="标题">
-        <el-input type="text" v-model="articleForm.title"></el-input>
+      <el-form-item>
+        <el-input type="text" v-model="articleForm.title" placeholder="标题"></el-input>
       </el-form-item>
-      <el-form-item label="内容">
-        <el-input type="textarea" v-model="articleForm.content"></el-input>
+      <el-form-item>
+        <!-- bidirectional data binding（双向数据绑定） -->
+        <quill-editor
+          v-model="articleForm.content"
+          ref="myQuillEditor"
+          :options="editorOption"
+        ></quill-editor>
       </el-form-item>
-      <el-form-item label="封面" >
-      </el-form-item>
-      <el-form-item label="频道" >
-         <!--
+      <el-form-item label="封面"></el-form-item>
+      <el-form-item label="频道">
+        <!--
           组件通信：
             父传子：Props Down
             子传父：Events Up
-         -->
+        -->
         <!-- <article-channel
           :value="articleForm.channel_id"
           @input="articleForm.channel_id = $event"
-        ></article-channel> -->
+        ></article-channel>-->
 
         <!--
           v-model 就是：
             :value="articleForm.channel_id"
             @input="articleForm.channel_id = $event"
           简写。
-         -->
-        <article-Channel
-          :value="articleForm.channel_id"
-          @input="articleForm.channel_id = $event"
-        ></article-Channel>
+        -->
+        <article-Channel :value="articleForm.channel_id" @input="articleForm.channel_id = $event"></article-Channel>
         <!-- <el-select v-model="articleForm.channel_id">
           <el-option label="" value="shanghai"></el-option>
-        </el-select> -->
-
+        </el-select>-->
       </el-form-item>
     </el-form>
-
   </el-card>
 </template>
 
 <script>
 import ArticleChannel from '@/components/article-channel'
+// require styles
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
+import { quillEditor } from 'vue-quill-editor'
 export default {
   name: 'AppPublish',
   data () {
@@ -56,17 +60,27 @@ export default {
       articleForm: {
         title: '', // 标题
         content: '', // 内容
-        cover: { // 封面
+        cover: {
+          // 封面
           type: 0, // 封面类型，-1：自动，0-无图，1-1张，3-3张
           images: [] // 图片链接
         },
         channel_id: '' // 频道
-      }
-
+      },
+      editorOption: {} // 富文本编辑器相关参数选项
     }
   },
   components: {
-    ArticleChannel
+    ArticleChannel,
+    quillEditor
+  },
+  computed: {
+    editor () {
+      return this.$refs.myQuillEditor.quill
+    }
+  },
+  mounted () {
+    console.log('this is current quill instance object', this.editor)
   },
   methods: {
     handlePublish (draft = false) {
@@ -77,15 +91,17 @@ export default {
         params: {
           draft
         }
-      }).then(data => {
-        this.$message({
-          type: 'success',
-          message: '发布成功'
-        })
-      }).catch(err => {
-        console.log(err)
-        this.$message.error('发布失败')
       })
+        .then(data => {
+          this.$message({
+            type: 'success',
+            message: '发布成功'
+          })
+        })
+        .catch(err => {
+          console.log(err)
+          this.$message.error('发布失败')
+        })
     }
   }
 }
