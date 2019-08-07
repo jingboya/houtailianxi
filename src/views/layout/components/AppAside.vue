@@ -41,7 +41,7 @@
         <i class="el-icon-setting"></i>
         <span slot="title">素材</span>
       </el-menu-item>
-      <el-menu-item index="/fans">
+      <el-menu-item index="/fans/overview">
         <i class="el-icon-setting"></i>
         <span slot="title">粉丝</span>
       </el-menu-item>
